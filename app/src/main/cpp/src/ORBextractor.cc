@@ -104,6 +104,61 @@ static float IC_Angle(const Mat& image, Point2f pt,  const vector<int> & u_max)
     return fastAtan2((float)m_01, (float)m_10);
 }
 
+void makeOffsets(int pixel[25], int rowStride, int patternSize)
+{
+    static const int offsets3[][2] =
+        {
+            {0,  3}, { 1,  3}, { 2,  2}, { 3,  1}, { 3, 0}, { 3, -1}, { 2, -2}, { 1, -3},
+            {0, -3}, {-1, -3}, {-2, -2}, {-3, -1}, {-3, 0}, {-3,  1}, {-2,  2}, {-1,  3}
+        };
+
+    static const int offsets2[][2] =
+        {
+            {0,  2}, { 1,  2}, { 2,  1}, { 2, 0}, { 2, -1}, { 1, -2},
+            {0, -2}, {-1, -2}, {-2, -1}, {-2, 0}, {-2,  1}, {-1,  2}
+        };
+
+    static const int offsets1[][2] =
+        {
+            {0,  1}, { 1,  1}, { 1, 0}, { 1, -1},
+            {0, -1}, {-1, -1}, {-1, 0}, {-1,  1}
+        };
+
+    const int (*offsets)[2] = patternSize == 16 ? offsets16 :
+                              patternSize == 12 ? offsets12 :
+                              patternSize == 8  ? offsets8  : 0;
+
+    CV_Assert(pixel && offsets);
+
+    int k = 0;
+    for( ; k < patternSize; k++ )
+        pixel[k] = offsets[k][0] + offsets[k][1] * rowStride;
+    for( ; k < 25; k++ )
+        pixel[k] = pixel[k - patternSize];
+}
+static void computeRoundDescriptor(const KeyPoint& kpt,
+                                   const Mat& img, const Point* pattern,
+                                   uchar* desc)
+{
+    static const int offsets3[][2] =
+        {
+            {0,  3}, { 1,  3}, { 2,  2}, { 3,  1}, { 3, 0}, { 3, -1}, { 2, -2}, { 1, -3},
+            {0, -3}, {-1, -3}, {-2, -2}, {-3, -1}, {-3, 0}, {-3,  1}, {-2,  2}, {-1,  3}
+        };
+
+    static const int offsets2[][2] =
+        {
+            {0,  2}, { 1,  2}, { 2,  1}, { 2, 0}, { 2, -1}, { 1, -2},
+            {0, -2}, {-1, -2}, {-2, -1}, {-2, 0}, {-2,  1}, {-1,  2}
+        };
+
+    static const int offsets1[][2] =
+        {
+            {0,  1}, { 1,  1}, { 1, 0}, { 1, -1},
+            {0, -1}, {-1, -1}, {-1, 0}, {-1,  1}
+        };
+}
+
 
 const float factorPI = (float)(CV_PI/180.f);
 static void computeOrbDescriptor(const KeyPoint& kpt,
